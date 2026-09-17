@@ -1,0 +1,44 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "run-semaforo-5053",
+			"type": "shell",
+			"command": "c:/Users/cmalosti/semaforo-inteligente/venv/Scripts/python.exe",
+			"args": [
+				"run.py",
+				"--port",
+				"5053",
+				"--source",
+				"0"
+			],
+			"isBackground": true
+		},
+		{
+			"label": "run-semaforo-5054",
+			"type": "shell",
+			"command": "c:/Users/cmalosti/semaforo-inteligente/venv/Scripts/python.exe",
+			"args": [
+				"run.py",
+				"--port",
+				"5054",
+				"--source",
+				"0"
+			],
+			"isBackground": true
+		},
+		{
+			"label": "run-semaforo-live",
+			"type": "shell",
+			"command": "c:/Users/cmalosti/semaforo-inteligente/venv/Scripts/python.exe",
+			"args": [
+				"run.py",
+				"--port",
+				"5053",
+				"--source",
+				"0"
+			],
+			"isBackground": true
+		}
+	]
+}

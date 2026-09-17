@@ -1,0 +1,23 @@
+2026-09-16 09:25:20,597 [INFO] WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5053
+ * Running on http://192.168.0.11:5053
+2026-09-16 09:25:20,599 [INFO] Press CTRL+C to quit
+2026-09-16 09:25:20,616 [INFO] 127.0.0.1 - - [16/Sep/2026 09:25:20] "GET /api/status HTTP/1.1" 200 -
+2026-09-16 09:25:20,627 [INFO] 127.0.0.1 - - [16/Sep/2026 09:25:20] "GET /api/status HTTP/1.1" 200 -
+2026-09-16 09:25:20,636 [INFO] 127.0.0.1 - - [16/Sep/2026 09:25:20] "GET /api/status HTTP/1.1" 200 -
+2026-09-16 09:25:21,462 [INFO] 127.0.0.1 - - [16/Sep/2026 09:25:21] "GET /api/status HTTP/1.1" 200 -
+2026-09-16 09:25:21,867 [INFO] 127.0.0.1 - - [16/Sep/2026 09:25:21] "GET /socket.io/?EIO=4&transport=polling&t=Q2gBSQW HTTP/1.1" 200 -
+2026-09-16 09:25:21,885 [INFO] 127.0.0.1 - - [16/Sep/2026 09:25:21] "POST /socket.io/?EIO=4&transport=polling&t=Q2gBSRF&sid=uFE4Tl7j0SM2RrOZAAAA HTTP/1.1" 200 -
+2026-09-16 09:25:21,919 [INFO] 127.0.0.1 - - [16/Sep/2026 09:25:21] "GET /socket.io/?EIO=4&transport=polling&t=Q2gBSRG&sid=uFE4Tl7j0SM2RrOZAAAA HTTP/1.1" 200 -
+2026-09-16 09:25:22,945 [INFO] Semáforo físico: GREEN
+2026-09-16 09:25:32,981 [INFO] Semáforo físico: RED
+2026-09-16 09:26:21,000 [INFO] 127.0.0.1 - - [16/Sep/2026 09:26:21] "GET / HTTP/1.1" 200 -
+2026-09-16 09:26:21,067 [INFO] 127.0.0.1 - - [16/Sep/2026 09:26:21] "GET /video_feed HTTP/1.1" 200 -
+2026-09-16 09:26:21,424 [INFO] 127.0.0.1 - - [16/Sep/2026 09:26:21] "GET /static/css/style.css HTTP/1.1" 304 -
+2026-09-16 09:26:21,434 [INFO] 127.0.0.1 - - [16/Sep/2026 09:26:21] "GET /static/js/app.js HTTP/1.1" 200 -
+2026-09-16 09:26:21,461 [INFO] 127.0.0.1 - - [16/Sep/2026 09:26:21] "GET /socket.io/?EIO=4&transport=polling&t=Q2gBg-7 HTTP/1.1" 200 -
+2026-09-16 09:26:21,499 [INFO] 127.0.0.1 - - [16/Sep/2026 09:26:21] "POST /socket.io/?EIO=4&transport=polling&t=Q2gBg-S&sid=aZOmhjnomFYq5Yq4AAAC HTTP/1.1" 200 -
+2026-09-16 09:26:21,507 [INFO] 127.0.0.1 - - [16/Sep/2026 09:26:21] "GET /socket.io/?EIO=4&transport=polling&t=Q2gBg-V&sid=aZOmhjnomFYq5Yq4AAAC HTTP/1.1" 200 -
+2026-09-16 09:26:21,559 [INFO] 127.0.0.1 - - [16/Sep/2026 09:26:21] "GET /socket.io/?EIO=4&transport=polling&t=Q2gBg_B&sid=aZOmhjnomFYq5Yq4AAAC HTTP/1.1" 200 -
+2026-09-16 09:26:21,576 [INFO] 127.0.0.1 - - [16/Sep/2026 09:26:21] "GET /socket.io/?EIO=4&transport=polling&t=Q2gBg_-&sid=aZOmhjnomFYq5Yq4AAAC HTTP/1.1" 200 -

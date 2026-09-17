@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Semáforo Inteligente</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>🚦 Semáforo Inteligente</h1>
+    <p class="subtitle">Fluxo de trânsito adaptativo + detecção de veículos de emergência</p>
+  </header>
+
+  <main>
+    <section class="video-panel">
+      <img id="video" src="/video_feed" alt="Stream da câmera" />
+      <div class="video-controls">
+        <label>Fonte de vídeo:
+          <input id="sourceInput" type="text" placeholder="0 = webcam, ou caminho/URL RTSP" value="0" />
+        </label>
+        <button id="applySource">Conectar</button>
+        <label class="toggle">
+          <input id="audioToggle" type="checkbox" />
+          Ativar microfone (detecção de sirene)
+        </label>
+      </div>
+    </section>
+
+    <section class="status-panel">
+      <div class="card simulator-card">
+        <h2>Modo Simulação (sem câmera)</h2>
+        <label class="toggle simulator-toggle">
+          <input id="manualModeToggle" type="checkbox" />
+          Ativar contagem manual para demonstração
+        </label>
+
+        <div class="sim-grid">
+          <div class="sim-counter">
+            <span class="sim-icon" aria-hidden="true">🚗</span>
+            <span class="sim-label">Carros</span>
+            <button id="carMinus" class="sim-btn" type="button">-</button>
+            <strong id="manualCars">0</strong>
+            <button id="carPlus" class="sim-btn" type="button">+</button>
+          </div>
+
+          <div class="sim-counter">
+            <span class="sim-icon" aria-hidden="true">🏍️</span>
+            <span class="sim-label">Motos</span>
+            <button id="motorcycleMinus" class="sim-btn" type="button">-</button>
+            <strong id="manualMotorcycles">0</strong>
+            <button id="motorcyclePlus" class="sim-btn" type="button">+</button>
+          </div>
+        </div>
+
+        <div class="sim-actions">
+          <button id="ambulanceToggle" class="pill-btn" type="button">⚡ Prioridade</button>
+          <button id="sirenToggle" class="pill-btn" type="button">🚨 Sirene</button>
+        </div>
+      </div>
+
+      <div class="card semaforo-card">
+        <h2>Estado do Semáforo</h2>
+        <div id="lightIndicator" class="light-indicator red">RED</div>
+        <p>Tempo no estado atual: <span id="secondsInState">-</span>s</p>
+        <p>Alvo de verde: <span id="greenTarget">-</span>s</p>
+      </div>
+
+      <div class="card">
+        <h2>Tráfego</h2>
+        <p>Veículos detectados: <strong id="totalVehicles">0</strong></p>
+        <p>Veículos em movimento: <strong id="movingVehicles">0</strong></p>
+        <p>Veículos parados: <strong id="stoppedVehicles">0</strong></p>
+      </div>
+
+      <div class="card emergency-card">
+        <h2>Veículo de Emergência</h2>
+        <p id="emergencyBadge" class="badge inactive">Nenhum detectado</p>
+        <p>Confiança: <span id="emergencyConfidence">0%</span></p>
+        <p>Farol/baliza acionado: <span id="headlightState">Não</span></p>
+      </div>
+
+      <div class="card">
+        <h2>Diagnóstico</h2>
+        <p>Fonte atual: <span id="cameraSource">-</span></p>
+        <p>Microfone ativo: <span id="audioEnabled">Não</span></p>
+        <p>Hardware GPIO real: <span id="hardwareAvailable">Simulado</span></p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Protótipo para testes com câmera/webcam e sensores em tempo real. Sem integração com produção.</p>
+  </footer>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
