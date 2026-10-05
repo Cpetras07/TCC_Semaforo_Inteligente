@@ -11,6 +11,7 @@ Expõe:
 """
 from __future__ import annotations
 
+import atexit
 import logging
 import threading
 import time
@@ -22,6 +23,7 @@ from flask_socketio import SocketIO
 from .actuators import ActuatorController
 from .camera_stream import CameraStream
 from .emergency_detector import EmergencyDetector
+from .history import HistoryStore
 from .traffic_controller import TrafficLightController
 from .vehicle_detector import VehicleDetector
 
@@ -37,12 +39,15 @@ vehicle_detector = VehicleDetector()
 emergency_detector = EmergencyDetector()
 traffic_controller = TrafficLightController()
 actuators = ActuatorController()
+history = HistoryStore()
 
 _frame_lock = threading.Lock()
+_status_lock = threading.Lock()
 _latest_jpeg: bytes | None = None
 _latest_status: dict = {}
 _processing_active = True
 _no_camera_warned = False
+_last_history_at = 0.0
 _simulation_lock = threading.Lock()
 _manual_simulation = {
     "enabled": False,
@@ -72,7 +77,7 @@ def _placeholder_frame(message: str):
 
 
 def _processing_loop() -> None:
-    global _latest_jpeg, _latest_status, _no_camera_warned
+    global _latest_jpeg, _latest_status, _no_camera_warned, _last_history_at
     while _processing_active:
         frame = camera.read()
         if frame is None:
@@ -131,19 +136,32 @@ def _processing_loop() -> None:
         status_dict["audio_enabled"] = emergency_detector.siren_detector.enabled
         status_dict["camera_source"] = str(camera.source)
         status_dict["hardware_available"] = actuators.hardware_available
+        status_dict["esp32_available"] = actuators.esp32_available
+        status_dict["esp32_port"] = actuators.esp32_port
         status_dict["manual_mode"] = simulation["enabled"]
         status_dict["manual_cars"] = simulation["cars"]
         status_dict["manual_motorcycles"] = simulation["motorcycles"]
         status_dict["manual_ambulance"] = simulation["ambulance"]
         status_dict["manual_siren"] = simulation["siren"]
-        _latest_status = status_dict
+        with _status_lock:
+            _latest_status = dict(status_dict)
+
+        # Registra no máximo um evento por segundo para não criar um banco enorme.
+        now = time.time()
+        if now - _last_history_at >= 1.0:
+            history.record(status_dict)
+            _last_history_at = now
         socketio.emit("status_update", status_dict)
 
         time.sleep(0.03)  # ~30 fps alvo de processamento
 
 
 def _draw_hud(frame, traffic_state, emergency_status) -> None:
-    color = (0, 255, 0) if traffic_state.light == "GREEN" else (0, 0, 255)
+    color = {
+        "GREEN": (0, 255, 0),
+        "YELLOW": (0, 165, 255),
+        "RED": (0, 0, 255),
+    }.get(traffic_state.light, (255, 255, 255))
     cv2.circle(frame, (30, 30), 18, color, -1)
     cv2.putText(
         frame, f"SEMAFORO: {traffic_state.light}", (60, 38),
@@ -185,7 +203,25 @@ def video_feed():
 
 @app.route("/api/status")
 def api_status():
-    return jsonify(_latest_status)
+    with _status_lock:
+        return jsonify(dict(_latest_status))
+
+
+@app.route("/api/history")
+def api_history():
+    return jsonify(history.recent(request.args.get("limit", 20)))
+
+
+@app.route("/api/esp32", methods=["POST"])
+def api_esp32():
+    data = request.get_json(force=True, silent=True) or {}
+    port = str(data.get("port", "")).strip()
+    ok = actuators.configure_esp32(port)
+    return jsonify({
+        "ok": ok,
+        "port": actuators.esp32_port,
+        "esp32_available": actuators.esp32_available,
+    })
 
 
 @app.route("/api/source", methods=["POST"])
@@ -231,3 +267,14 @@ def api_simulation():
 def start_background_processing() -> None:
     thread = threading.Thread(target=_processing_loop, daemon=True)
     thread.start()
+
+
+def _cleanup() -> None:
+    global _processing_active
+    _processing_active = False
+    emergency_detector.disable_audio()
+    camera.release()
+    actuators.close()
+
+
+atexit.register(_cleanup)

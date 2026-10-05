@@ -24,6 +24,10 @@
           <input id="audioToggle" type="checkbox" />
           Ativar microfone (detecção de sirene)
         </label>
+        <label>ESP32:
+          <input id="esp32PortInput" type="text" placeholder="COM3 (opcional)" />
+        </label>
+        <button id="connectEsp32" type="button">Conectar ESP32</button>
       </div>
     </section>
 
@@ -57,6 +61,14 @@
           <button id="ambulanceToggle" class="pill-btn" type="button">⚡ Prioridade</button>
           <button id="sirenToggle" class="pill-btn" type="button">🚨 Sirene</button>
         </div>
+
+        <div class="preset-actions">
+          <button class="preset-btn" data-preset="low" type="button">Fluxo baixo</button>
+          <button class="preset-btn" data-preset="medium" type="button">Fluxo médio</button>
+          <button class="preset-btn" data-preset="high" type="button">Congestionamento</button>
+          <button class="preset-btn" data-preset="emergency" type="button">Emergência</button>
+          <button class="preset-btn" data-preset="clear" type="button">Limpar</button>
+        </div>
       </div>
 
       <div class="card semaforo-card">
@@ -85,6 +97,17 @@
         <p>Fonte atual: <span id="cameraSource">-</span></p>
         <p>Microfone ativo: <span id="audioEnabled">Não</span></p>
         <p>Hardware GPIO real: <span id="hardwareAvailable">Simulado</span></p>
+        <p>ESP32: <span id="esp32Available">Desconectado</span></p>
+      </div>
+
+      <div class="card history-card">
+        <h2>Últimos eventos</h2>
+        <div class="history-table-wrap">
+          <table>
+            <thead><tr><th>Hora</th><th>Sinal</th><th>Veículos</th><th>Emergência</th></tr></thead>
+            <tbody id="historyBody"><tr><td colspan="4">Aguardando dados...</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </section>
   </main>

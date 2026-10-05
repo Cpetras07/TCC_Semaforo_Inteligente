@@ -37,6 +37,8 @@ semaforo-inteligente/
 ├── templates/index.html        # dashboard
 ├── static/css/style.css
 ├── static/js/app.js
+├── data/semaforo.db         # histórico criado automaticamente
+├── esp32/esp32_semaforo.ino # programa do ESP32
 ├── requirements.txt
 └── run.py                       # ponto de entrada
 ```
@@ -65,6 +67,21 @@ Parâmetros opcionais:
 ```powershell
 python run.py --port 5000 --source 0
 ```
+
+Para controlar um ESP32 conectado por USB, descubra a porta no Gerenciador de
+Dispositivos do Windows e execute, por exemplo:
+
+```powershell
+python run.py --source 0 --esp32-port COM3
+```
+
+O sistema envia `LIGHT RED`, `LIGHT YELLOW`, `LIGHT GREEN`, `HEADLIGHT ON` e
+`HEADLIGHT OFF`, uma linha por comando. O ESP32 deve ler essas linhas pela
+Serial e acionar os LEDs correspondentes. Também é possível informar a porta
+diretamente no painel.
+
+O código de exemplo para gravar no ESP32 está em `esp32/esp32_semaforo.ino`.
+Ele usa os pinos 25 (vermelho), 26 (amarelo), 27 (verde) e 33 (farol/baliza).
 
 - `--source 0` → usa a webcam padrão do computador (índice 0).
 - `--source 1` → segunda webcam conectada.
@@ -111,6 +128,10 @@ http://<IP-do-computador>:5000
 - Emergência detectada → abre/mantém o verde imediatamente e liga o
   farol/baliza automaticamente, voltando ao ciclo normal quando a emergência
   deixa de ser detectada.
+- Ao terminar o verde, o sistema passa pelo amarelo por 2 segundos antes do
+  vermelho.
+- O painel oferece presets de demonstração e salva um histórico local em
+  SQLite para consulta em `/api/history`.
 
 ## Próximos passos sugeridos (para evoluir o protótipo)
 

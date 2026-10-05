@@ -1,4 +1,5 @@
-const socket = io();
+// O painel continua funcionando por polling se o CDN do Socket.IO estiver offline.
+const socket = typeof io === "function" ? io() : null;
 
 const el = {
   lightIndicator: document.getElementById("lightIndicator"),
@@ -25,6 +26,10 @@ const el = {
   motorcyclePlus: document.getElementById("motorcyclePlus"),
   ambulanceToggle: document.getElementById("ambulanceToggle"),
   sirenToggle: document.getElementById("sirenToggle"),
+  esp32PortInput: document.getElementById("esp32PortInput"),
+  connectEsp32: document.getElementById("connectEsp32"),
+  esp32Available: document.getElementById("esp32Available"),
+  historyBody: document.getElementById("historyBody"),
 };
 
 const simulationState = {
@@ -82,8 +87,10 @@ async function pushSimulationState() {
 }
 
 function renderStatus(data) {
-  el.lightIndicator.textContent = data.light === "GREEN" ? "VERDE" : "VERMELHO";
-  el.lightIndicator.className = "light-indicator " + (data.light === "GREEN" ? "green" : "red");
+  const lightLabels = { GREEN: "VERDE", YELLOW: "AMARELO", RED: "VERMELHO" };
+  const lightClass = data.light === "GREEN" ? "green" : (data.light === "YELLOW" ? "yellow" : "red");
+  el.lightIndicator.textContent = lightLabels[data.light] || data.light || "-";
+  el.lightIndicator.className = "light-indicator " + lightClass;
 
   el.secondsInState.textContent = data.seconds_in_state ?? "-";
   el.greenTarget.textContent = data.green_time_target ?? "-";
@@ -104,6 +111,7 @@ function renderStatus(data) {
   el.cameraSource.textContent = data.camera_source ?? "-";
   el.audioEnabled.textContent = data.audio_enabled ? "Sim" : "Não";
   el.hardwareAvailable.textContent = data.hardware_available ? "Real (GPIO)" : "Simulado";
+  el.esp32Available.textContent = data.esp32_available ? `Conectado (${data.esp32_port})` : "Desconectado";
 
   if (typeof data.manual_mode === "boolean") {
     simulationState.enabled = data.manual_mode;
@@ -115,11 +123,11 @@ function renderStatus(data) {
   }
 }
 
-socket.on("status_update", renderStatus);
+if (socket) socket.on("status_update", renderStatus);
 
 // fallback via polling caso o websocket não conecte
 setInterval(async () => {
-  if (socket.connected) return;
+  if (socket && socket.connected) return;
   try {
     const res = await fetch("/api/status");
     const data = await res.json();
@@ -143,6 +151,19 @@ el.audioToggle.addEventListener("change", async () => {
     body: JSON.stringify({ enable: el.audioToggle.checked }),
   });
 });
+
+if (el.connectEsp32) {
+  el.connectEsp32.addEventListener("click", async () => {
+    const port = el.esp32PortInput.value.trim();
+    const res = await fetch("/api/esp32", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ port }),
+    });
+    const data = await res.json();
+    el.esp32Available.textContent = data.esp32_available ? `Conectado (${data.port})` : "Não conectado";
+  });
+}
 
 if (el.manualModeToggle) {
   el.manualModeToggle.addEventListener("change", async () => {
@@ -194,3 +215,44 @@ if (el.sirenToggle) {
 }
 
 updateSimulationUI();
+
+const presets = {
+  low: { cars: 2, motorcycles: 0, ambulance: false, siren: false },
+  medium: { cars: 8, motorcycles: 2, ambulance: false, siren: false },
+  high: { cars: 20, motorcycles: 5, ambulance: false, siren: false },
+  emergency: { cars: 8, motorcycles: 2, ambulance: true, siren: true },
+  clear: { cars: 0, motorcycles: 0, ambulance: false, siren: false },
+};
+
+document.querySelectorAll("[data-preset]").forEach((button) => {
+  button.addEventListener("click", async () => {
+    const preset = presets[button.dataset.preset];
+    if (!preset) return;
+    simulationState.enabled = true;
+    Object.assign(simulationState, preset);
+    await pushSimulationState();
+  });
+});
+
+async function refreshHistory() {
+  if (!el.historyBody) return;
+  try {
+    const response = await fetch("/api/history?limit=10");
+    const rows = await response.json();
+    if (!rows.length) {
+      el.historyBody.innerHTML = "<tr><td colspan=\"4\">Nenhum evento registrado</td></tr>";
+      return;
+    }
+    el.historyBody.innerHTML = rows.map((row) => {
+      const time = new Date(row.recorded_at * 1000).toLocaleTimeString();
+      const emergency = row.emergency_active ? "Sim" : "Não";
+      const light = row.light === "GREEN" ? "Verde" : (row.light === "YELLOW" ? "Amarelo" : "Vermelho");
+      return `<tr><td>${time}</td><td>${light}</td><td>${row.total_vehicles}</td><td>${emergency}</td></tr>`;
+    }).join("");
+  } catch (error) {
+    // O painel principal continua funcionando mesmo se o histórico não responder.
+  }
+}
+
+refreshHistory();
+setInterval(refreshHistory, 3000);

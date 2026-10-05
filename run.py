@@ -5,12 +5,17 @@ Uso:
 """
 import argparse
 
-from app.server import app, camera, socketio, start_background_processing
+from app.server import app, actuators, camera, socketio, start_background_processing
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Semáforo Inteligente - servidor")
     parser.add_argument("--port", type=int, default=5000)
+    parser.add_argument(
+        "--esp32-port",
+        default="",
+        help="Porta USB do ESP32, por exemplo COM3. Opcional.",
+    )
     parser.add_argument(
         "--source",
         default="0",
@@ -23,6 +28,8 @@ def main() -> None:
     except ValueError:
         source_value = args.source
     camera.set_source(source_value)
+    if args.esp32_port:
+        actuators.configure_esp32(args.esp32_port)
 
     start_background_processing()
 

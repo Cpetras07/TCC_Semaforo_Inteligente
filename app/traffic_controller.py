@@ -18,12 +18,14 @@ from enum import Enum
 
 class LightState(str, Enum):
     RED = "RED"
+    YELLOW = "YELLOW"
     GREEN = "GREEN"
 
 
 MIN_GREEN_SECONDS = 10
 MAX_GREEN_SECONDS = 45
 MIN_RED_SECONDS = 8
+YELLOW_SECONDS = 2
 EXTRA_SECONDS_PER_STOPPED_CAR = 2.5
 
 
@@ -79,7 +81,7 @@ class TrafficLightController:
 
             # Prioridade máxima: veículo de emergência aproximando -> abre/mantém verde
             if emergency_active:
-                if self._state == LightState.RED:
+                if self._state != LightState.GREEN:
                     self._switch(LightState.GREEN)
                     self._green_target_seconds = MIN_GREEN_SECONDS
                 else:
@@ -92,6 +94,9 @@ class TrafficLightController:
                     MAX_GREEN_SECONDS,
                 )
                 if elapsed >= self._green_target_seconds:
+                    self._switch(LightState.YELLOW)
+            elif self._state == LightState.YELLOW:
+                if elapsed >= YELLOW_SECONDS:
                     self._switch(LightState.RED)
             elif self._state == LightState.RED:
                 if elapsed >= MIN_RED_SECONDS and traffic_demand > 0:
