@@ -1,143 +1,94 @@
 # 🚦 Semáforo Inteligente
 
-Protótipo de semáforo adaptativo com IA aplicada a duas funcionalidades:
+## 📌 Sobre o projeto
 
-1. **Fluxo de trânsito adaptativo** — detecta veículos parados na via (via
-   câmera/webcam) e ajusta dinamicamente o tempo de verde conforme o volume
-   de veículos parados.
-2. **Prioridade a veículos de emergência** — identifica a presença de um
-   veículo de emergência (polícia, bombeiros, ambulância) combinando:
-   - **Visão computacional**: padrão de piscar do giroflex (vermelho/azul).
-   - **Áudio**: assinatura espectral típica de sirene captada por microfone.
-   - Quando detectado, o semáforo prioriza abertura do verde e um atuador
-     (farol/baliza, ou GPIO real em Raspberry Pi) é acionado automaticamente.
+O **Semáforo Inteligente** é um projeto acadêmico desenvolvido como Trabalho de Conclusão de Curso (TCC), com o objetivo de criar um protótipo de semáforo adaptativo capaz de utilizar visão computacional e Inteligência Artificial para auxiliar no controle do trânsito.
 
-Inclui um **dashboard web ao vivo** para acompanhar tudo isso, com stream de
-vídeo, indicadores do semáforo, contadores de tráfego e alerta de emergência
-— pronto para testes reais com webcam/câmera IP e, futuramente, sensores.
+O sistema busca analisar o fluxo de veículos em tempo real e adaptar o funcionamento do semáforo de acordo com as condições da via. Além disso, o projeto prevê a identificação de veículos de emergência para permitir sua passagem prioritária.
 
-> ⚠️ Este é um protótipo funcional para validação de conceito. A detecção de
-> veículos usa subtração de fundo (sem depender de modelos pesados), e a
-> classificação de "veículo de emergência" é heurística (cor + áudio). Para
-> produção, recomenda-se treinar/usar um modelo supervisionado (ex.: YOLOv8
-> fine-tuned) — o código já está preparado para isso (`USE_YOLO` em
-> `app/vehicle_detector.py`).
+## 🎯 Objetivo
 
-## Estrutura do projeto
+Desenvolver uma solução de semaforização inteligente capaz de tornar o controle do trânsito mais eficiente, utilizando câmeras, processamento de imagens e outros recursos computacionais para tomar decisões de forma automática.
 
-```
-semaforo-inteligente/
-├── app/
-│   ├── server.py             # Flask + SocketIO, rotas e loop de processamento
-│   ├── camera_stream.py       # captura de webcam / vídeo / RTSP
-│   ├── vehicle_detector.py    # detecção e contagem de veículos parados
-│   ├── emergency_detector.py  # detecção de giroflex (visão) + sirene (áudio)
-│   ├── traffic_controller.py  # máquina de estados do semáforo
-│   └── actuators.py           # farol/baliza + GPIO (real ou simulado)
-├── templates/index.html        # dashboard
-├── static/css/style.css
-├── static/js/app.js
-├── data/semaforo.db         # histórico criado automaticamente
-├── esp32/esp32_semaforo.ino # programa do ESP32
-├── requirements.txt
-└── run.py                       # ponto de entrada
-```
+O projeto possui dois focos principais:
 
-## Instalação
+- Otimizar o tempo dos sinais de acordo com o fluxo de veículos;
+- Priorizar a passagem de veículos de emergência.
 
-```powershell
-cd semaforo-inteligente
-python -m venv venv
-venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-```
+## ⚙️ Principais funcionalidades
 
-> Se `sounddevice` falhar na instalação (algumas máquinas exigem drivers de
-> áudio), o sistema continua funcionando normalmente — a detecção de sirene
-> fica desabilitada e apenas o giroflex (visual) é usado.
+### 🚗 Controle adaptativo do trânsito
 
-## Como executar
+O sistema utiliza uma câmera ou webcam para identificar veículos na via e analisar o fluxo de trânsito.
 
-```powershell
-python run.py
-```
+A partir dessas informações, o tempo de abertura do sinal verde pode ser ajustado dinamicamente de acordo com a quantidade de veículos detectados.
 
-Parâmetros opcionais:
+### 🚑 Prioridade para veículos de emergência
 
-```powershell
-python run.py --port 5000 --source 0
-```
+O sistema busca identificar veículos como:
 
-Para controlar um ESP32 conectado por USB, descubra a porta no Gerenciador de
-Dispositivos do Windows e execute, por exemplo:
+- Ambulâncias;
+- Viaturas policiais;
+- Veículos do Corpo de Bombeiros.
 
-```powershell
-python run.py --source 0 --esp32-port COM3
-```
+A identificação pode combinar diferentes informações:
 
-O sistema envia `LIGHT RED`, `LIGHT YELLOW`, `LIGHT GREEN`, `HEADLIGHT ON` e
-`HEADLIGHT OFF`, uma linha por comando. O ESP32 deve ler essas linhas pela
-Serial e acionar os LEDs correspondentes. Também é possível informar a porta
-diretamente no painel.
+**Visão computacional:** análise do padrão luminoso do giroflex, principalmente luzes vermelhas e azuis.
 
-O código de exemplo para gravar no ESP32 está em `esp32/esp32_semaforo.ino`.
-Ele usa os pinos 25 (vermelho), 26 (amarelo), 27 (verde) e 33 (farol/baliza).
+**Áudio:** identificação de características sonoras relacionadas às sirenes por meio de um microfone.
 
-- `--source 0` → usa a webcam padrão do computador (índice 0).
-- `--source 1` → segunda webcam conectada.
-- `--source "C:\videos\transito.mp4"` → arquivo de vídeo local (útil para
-  testar sem câmera).
-- `--source "rtsp://usuario:senha@ip:porta/stream"` → câmera IP real.
+Quando uma situação de emergência é identificada, o sistema pode priorizar a abertura do sinal verde para facilitar a passagem do veículo.
 
-Você também pode trocar a fonte **em tempo real, sem reiniciar**, pelo campo
-"Fonte de vídeo" no próprio dashboard.
+## 📊 Dashboard
 
-## Acessando a interface
+O projeto também conta com um **dashboard web** para acompanhamento do funcionamento do sistema.
 
-Depois de iniciar o servidor, acesse no navegador:
+Por meio dele é possível visualizar informações como:
 
-```
-http://localhost:5000
-```
+- Stream de vídeo da câmera;
+- Estado atual do semáforo;
+- Contagem de veículos;
+- Informações sobre o fluxo de trânsito;
+- Alertas relacionados à identificação de veículos de emergência.
 
-Ou, para acessar de outro dispositivo na mesma rede (ex.: celular apontando
-para uma câmera, ou notebook em outra sala):
+## 🛠️ Tecnologias utilizadas
 
-```
-http://<IP-do-computador>:5000
-```
+O projeto utiliza ou está sendo desenvolvido com tecnologias como:
 
-(descubra o IP com `ipconfig` no Windows — procure "Endereço IPv4").
+- Python
+- Visão Computacional
+- Inteligência Artificial
+- HTML
+- CSS
+- JavaScript
+- ESP32
+- Câmera/Webcam
+- Git e GitHub
 
-## Testando com sensores/câmera real
+> Algumas tecnologias e funcionalidades ainda estão em desenvolvimento e podem sofrer alterações durante a evolução do projeto.
 
-- **Webcam USB**: conecte e use `--source 0` (ou o índice correspondente).
-- **Câmera IP/RTSP**: informe a URL RTSP no campo de fonte do dashboard.
-- **Microfone** (detecção de sirene): marque "Ativar microfone (detecção de
-  sirene)" no dashboard. Requer `sounddevice` instalado e permissão de
-  microfone no sistema operacional.
-- **Hardware real (Raspberry Pi)**: instale `RPi.GPIO` no dispositivo; o
-  módulo `app/actuators.py` detecta automaticamente e passa a acionar pinos
-  GPIO reais (farol/baliza no pino 17, luz verde no 27, luz vermelha no 22)
-  em vez de apenas logar no console.
+## ▶️ Como executar
 
-## Lógica do semáforo (resumo)
+> Esta seção será atualizada conforme o desenvolvimento do projeto for concluído.
 
-- Verde mínimo: 10s | Verde máximo: 45s | Vermelho mínimo: 8s.
-- Cada veículo parado na fila estende o verde em +2.5s (até o máximo).
-- Emergência detectada → abre/mantém o verde imediatamente e liga o
-  farol/baliza automaticamente, voltando ao ciclo normal quando a emergência
-  deixa de ser detectada.
-- Ao terminar o verde, o sistema passa pelo amarelo por 2 segundos antes do
-  vermelho.
-- O painel oferece presets de demonstração e salva um histórico local em
-  SQLite para consulta em `/api/history`.
+Para executar o sistema será necessário possuir o ambiente Python configurado e instalar as dependências utilizadas pelo projeto.
 
-## Próximos passos sugeridos (para evoluir o protótipo)
+As instruções completas de instalação, configuração e execução serão adicionadas conforme o protótipo evoluir.
 
-- Treinar um classificador supervisionado de veículos de emergência (imagens
-  rotuladas de viaturas policiais, ambulâncias e bombeiros).
-- Integrar sensores de indução/laço magnético para contagem física de
-  veículos, complementando a câmera.
-- Persistir histórico de tráfego (banco de dados) para relatórios/analytics.
-- Suporte a múltiplas câmeras (um cruzamento com várias vias simultâneas).
+## 📷 Demonstração
+
+Imagens e capturas de tela do dashboard e do protótipo serão adicionadas nesta seção durante o desenvolvimento do projeto.
+
+## 🚧 Status do projeto
+
+🟡 **Em desenvolvimento**
+
+O projeto está sendo desenvolvido como Trabalho de Conclusão de Curso e novas funcionalidades estão sendo implementadas e testadas.
+
+## 👨‍💻 Autor
+
+**Cauã Petras Malosti**
+
+Estudante de Ciência da Computação.
+
+[LinkedIn](https://www.linkedin.com/in/cau%C3%A3-petras-malosti-73a00a258/)
